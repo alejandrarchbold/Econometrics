@@ -19,12 +19,12 @@ library(seasonal)
 info <- read_excel("~/TO.xlsx")
 info$mes1 <- ymd(info$mes1)
 
-### Gr醘icos
+### Gr谩ficos
 
-# Gr醘ico General
+# Gr谩fico General
 
 info %>% ggplot(aes(x = mes1, y = ocup)) + geom_line(size = 0.8, color = "#A52A2A") +
-  labs(title = "Tasa de Ocupaci髇", 
+  labs(title = "Tasa de Ocupaci贸n", 
        subtitle = "Total Nacional",
        x = "Tiempo",
        y = "Porcentaje  (%)", 
@@ -32,10 +32,10 @@ info %>% ggplot(aes(x = mes1, y = ocup)) + geom_line(size = 0.8, color = "#A52A2
   theme_bw() +
   scale_x_date(date_breaks = "12 months", date_labels = "%y")
 
-# Gr醘ico cambio mensual
+# Gr谩fico cambio mensual
 
 info %>% mutate(o_ocup = ocup - lag(ocup)) %>% ggplot(aes(x = mes1, y = o_ocup)) + geom_line(size = 1, color = "blue") +
-  labs(title = "Cambio mensual en la tasa de ocupaci髇", 
+  labs(title = "Cambio mensual en la tasa de ocupaci贸n", 
        subtitle = "Total Nacional",
        x = "Tiempo",
        y = "Porcentaje  (%)", 
@@ -43,13 +43,13 @@ info %>% mutate(o_ocup = ocup - lag(ocup)) %>% ggplot(aes(x = mes1, y = o_ocup))
   theme_bw() +
   scale_x_date(date_breaks = "12 months", date_labels = "%b %y")
 
-# Gr醘ico ACF y PACF
+# Gr谩fico ACF y PACF
 
-ggtsdisplay(ts(info$ocup, start = c(2001,1), frequency = 12), main = "Tasa de ocupaci髇")
+ggtsdisplay(ts(info$ocup, start = c(2001,1), frequency = 12), main = "Tasa de ocupaci贸n")
 
 # diferenciado cambio mensual
 
-ggtsdisplay(diff(ts(info$ocup, start = c(2001,1), frequency = 12)), main = "Cambio mensual en la tasa de ocupaci髇")
+ggtsdisplay(diff(ts(info$ocup, start = c(2001,1), frequency = 12)), main = "Cambio mensual en la tasa de ocupaci贸n")
 
 
 timeseries <- ts(info$ocup, frequency = 12)
@@ -64,9 +64,9 @@ pacf(adjusted_diffts)
 
 # ACF & PACF
 
-ggtsdisplay(timeseries, main = "Tasa de Ocupaci髇")
-ggtsdisplay(diffts, main = "Cambio mensual de la Tasa de Ocupaci髇")
-ggtsdisplay(adjusted_diffts, main = "Cambio de la tasa de ocupaci髇 sin el componente estacional")
+ggtsdisplay(timeseries, main = "Tasa de Ocupaci贸n")
+ggtsdisplay(diffts, main = "Cambio mensual de la Tasa de Ocupaci贸n")
+ggtsdisplay(adjusted_diffts, main = "Cambio de la tasa de ocupaci贸n sin el componente estacional")
 
 
 
@@ -83,7 +83,7 @@ coeftest(m1)
 coeftest(m2)
 #coeftest(m3)
 
-# Pron髎tico
+# Pron贸stico
 
 f1 <- forecast(m1, h = 12)
 plot(f1)
@@ -94,7 +94,7 @@ plot(f2)
 #f3 <- forecast(m3, h = 12)
 #plot(f3)
 
-# Test de ra韟 unitaria ADF
+# Test de ra铆z unitaria ADF
 
 summary(ur.df(timeseries, type = "trend", lags = 25, selectlags = "BIC"))
 summary(ur.df(timeseries, type = "drift", lags = 25, selectlags = "BIC"))
@@ -107,14 +107,14 @@ summary(ur.df(adjusted_diffts, type = "trend", lags = 25, selectlags = "BIC"))
 summary(ur.df(adjusted_diffts, type = "drift", lags = 25, selectlags = "BIC"))
 summary(ur.df(adjusted_diffts, type = "none", lags = 25, selectlags = "BIC"))
 
-# Descomposici髇 en tendencia y estacionalidad
+# Descomposici贸n en tendencia y estacionalidad
 
 ts(info$ocup, start =  c(2001,1), frequency = 12) %>% stats::decompose(type="multiplicative") %>% 
   autoplot() + 
-  labs(title = "Tasa de Ocupaci髇", 
-       subtitle = "Descomposici髇",
+  labs(title = "Tasa de Ocupaci贸n", 
+       subtitle = "Descomposici贸n",
        x = "Tiempo",
        y = " ") + 
   theme_bw()
 
-ggseasonplot(ts(info$ocup, start = c(2001,1), frequency = 12)) + labs(subtitle = "Gr醘ico de estaciones", title = "Tasa de ocupaci髇")
+ggseasonplot(ts(info$ocup, start = c(2001,1), frequency = 12)) + labs(subtitle = "Gr谩fico de estaciones", title = "Tasa de ocupaci贸n")
