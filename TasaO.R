@@ -23,14 +23,14 @@ info$mes1 <- ymd(info$mes1)
 
 # Gráfico General
 
-info %>% ggplot(aes(x = mes1, y = ocup)) + geom_line(size = 0.5, color = "#A52A2A") +
+info %>% ggplot(aes(x = mes1, y = ocup)) + geom_line(size = 0.8, color = "#A52A2A") +
   labs(title = "Tasa de Ocupación", 
        subtitle = "Total Nacional",
        x = "Tiempo",
        y = "Porcentaje  (%)", 
        caption = "Fuente: Dane") +
   theme_bw() +
-  scale_x_date(date_breaks = "12 months", date_labels = "%b %y")
+  scale_x_date(date_breaks = "12 months", date_labels = "%y")
 
 # Gráfico cambio mensual
 
@@ -54,34 +54,60 @@ ggtsdisplay(diff(ts(info$ocup, start = c(2001,1), frequency = 12)), main = "Camb
 
 timeseries <- ts(info$ocup, frequency = 12)
 plot(timeseries)
-diffts <- diff(timeseries)
+diffts <- diff(timeseries) # Cambio mensual
 plot(diffts)
 difftscomponent <- stats::decompose(diffts)
-adjusted_diffts <- diffts - difftscomponent$seasonal
+adjusted_diffts <- diffts - difftscomponent$seasonal # Quitando componente estacional
+plot(adjusted_diffts)
 acf(adjusted_diffts)
 pacf(adjusted_diffts)
+
+# ACF & PACF
 
 ggtsdisplay(timeseries, main = "Tasa de Ocupación")
 ggtsdisplay(diffts, main = "Cambio mensual de la Tasa de Ocupación")
 ggtsdisplay(adjusted_diffts, main = "Cambio de la tasa de ocupación sin el componente estacional")
 
 
-summary(m1 <- Arima(adjusted_diffts, order = c(1,1,0), include.mean = F))# AR(1))
-coeftest(m1)
 
-f1 <- forecast(m1, h = 10)
+# Modelo
+
+summary(m1 <- Arima(adjusted_diffts, order = c(1,1,2), include.mean = F))# AR(1))
+summary(m2 <- Arima(adjusted_diffts, order = c(2,1,2), include.mean = F))
+#summary(m3 <- Arima(timeseries, order = c(4,1,1), include.mean = F))
+
+mean(adjusted_diffts)
+# Significancia de los coeficientes
+
+coeftest(m1)
+coeftest(m2)
+#coeftest(m3)
+
+# Pronóstico
+
+f1 <- forecast(m1, h = 12)
 plot(f1)
 
+f2 <- forecast(m2, h = 12)
+plot(f2)
 
+#f3 <- forecast(m3, h = 12)
+#plot(f3)
+
+# Test de raíz unitaria ADF
 
 summary(ur.df(timeseries, type = "trend", lags = 25, selectlags = "BIC"))
 summary(ur.df(timeseries, type = "drift", lags = 25, selectlags = "BIC"))
 summary(ur.df(timeseries, type = "none", lags = 25, selectlags = "BIC"))
 
+# Ahora con la serie diferenciada y desestacionalizada 
+
 
 summary(ur.df(adjusted_diffts, type = "trend", lags = 25, selectlags = "BIC"))
 summary(ur.df(adjusted_diffts, type = "drift", lags = 25, selectlags = "BIC"))
 summary(ur.df(adjusted_diffts, type = "none", lags = 25, selectlags = "BIC"))
+
+# Descomposición en tendencia y estacionalidad
 
 ts(info$ocup, start =  c(2001,1), frequency = 12) %>% stats::decompose(type="multiplicative") %>% 
   autoplot() + 
@@ -91,4 +117,4 @@ ts(info$ocup, start =  c(2001,1), frequency = 12) %>% stats::decompose(type="mul
        y = " ") + 
   theme_bw()
 
-
+ggseasonplot(ts(info$ocup, start = c(2001,1), frequency = 12)) + labs(subtitle = "Gráfico de estaciones", title = "Tasa de ocupación")
